@@ -1,0 +1,83 @@
+/**
+ * @fileoverview Firestore Security Rules for SnapTranslate.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model. Each user can only
+ * access their own profile data and translation history.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profile information, with the document ID
+ *   matching the Firebase Authentication UID.
+ * - /users/{userId}/translationHistory/{translationHistoryId}: Stores translation
+ *   history for a specific user. The userId is denormalized within each
+ *   translationHistory document.
+ *
+ * Key Security Decisions:
+ * - Users can only create their own user document on initial sign-up, and only if the `id` matches their `uid`.
+ * - Users can only read and write their own profile data and translation history.
+ * - Listing all users is disallowed.
+ *
+ * Denormalization for Authorization:
+ * - The 'userId' field is denormalized into the `translationHistory` documents,
+ *   avoiding the need for complex queries in security rules.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Controls access to user profile documents.
+     * @path /users/{userId}
+     * @allow (create) User with UID 'user_abc' can create their own profile if the document id is their UID.
+     * @deny (create) User with UID 'user_abc' cannot create a profile with a different userId.
+     * @allow (get, list) User with UID 'user_abc' can get their own profile.
+     * @deny (get, list) User with UID 'user_abc' cannot list all users.
+     * @allow (update, delete) User with UID 'user_abc' can update/delete their own profile.
+     * @deny (update, delete) User with UID 'user_xyz' cannot update/delete user 'user_abc's profile.
+     * @principle Enforces document ownership for writes and restricts reads to the owner.
+     */
+    match /users/{userId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false; // Listing all users is not permitted
+
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to translation history documents for a specific user.
+     * @path /users/{userId}/translationHistory/{translationHistoryId}
+     * @allow (create) User with UID 'user_abc' can create a translation history entry under their user document.
+     * @deny (create) User with UID 'user_abc' cannot create a translation history entry under another user's document.
+     * @allow (get, list) User with UID 'user_abc' can get/list translation history entries under their user document.
+     * @deny (get, list) User with UID 'user_abc' cannot get/list translation history entries under another user's document.
+     * @allow (update, delete) User with UID 'user_abc' can update/delete a translation history entry under their user document.
+     * @deny (update, delete) User with UID 'user_xyz' cannot update/delete translation history entries under user 'user_abc's document.
+     * @principle Enforces document ownership for writes and restricts reads to the owner.
+     */
+    match /users/{userId}/translationHistory/{translationHistoryId} {
+      function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}

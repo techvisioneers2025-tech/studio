@@ -1,0 +1,133 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the SnapTranslate application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user account was created.",
+          "format": "date-time"
+        },
+        "preferredLanguage": {
+          "type": "string",
+          "description": "The user's preferred language for translation.  It is initialized as null and set during onboarding."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "displayName",
+        "createdAt"
+      ]
+    },
+    "TranslationHistory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TranslationHistory",
+      "type": "object",
+      "description": "Represents a single translation performed by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the translation history entry."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who performed the translation. (Relationship: User 1:N TranslationHistory)"
+        },
+        "sourceText": {
+          "type": "string",
+          "description": "The original text that was translated."
+        },
+        "translatedText": {
+          "type": "string",
+          "description": "The translated text."
+        },
+        "sourceLanguage": {
+          "type": "string",
+          "description": "The language of the original text (e.g., 'en' for English)."
+        },
+        "targetLanguage": {
+          "type": "string",
+          "description": "The language to which the text was translated (e.g., 'es' for Spanish)."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp indicating when the translation was performed.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "sourceText",
+        "translatedText",
+        "sourceLanguage",
+        "targetLanguage",
+        "timestamp"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information.  User documents are created upon initial sign-up. The 'userId' parameter is the Firebase Authentication UID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to the Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/translationHistory/{translationHistoryId}",
+        "definition": {
+          "entityName": "TranslationHistory",
+          "schema": {
+            "$ref": "#/backend/entities/TranslationHistory"
+          },
+          "description": "Stores the translation history for a specific user. The 'userId' is denormalized to avoid complex security rules.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user who performed the translation."
+            },
+            {
+              "name": "translationHistoryId",
+              "description": "The unique identifier for the translation history entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure authorization independence, clarity, and scalability for the SnapTranslate application.  User data is stored in a dedicated `users` collection, while translation histories are nested under each user for clear ownership and simplified security rules. This approach eliminates the need for complex `get()` calls in security rules, supporting atomic operations and easier debugging.  By storing each user's translation history under their specific user document, we're denormalizing the 'userId' which supports the required QAPs (Rules are not Filters), avoiding the need to filter results based on user identity during list operations, and simplifying security rules for data access."
+  }
+}
