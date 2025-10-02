@@ -1,5 +1,5 @@
 'use client';
-import { ScanText } from 'lucide-react';
+import { Logo } from './logo';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -18,9 +18,9 @@ export function SplashScreen() {
           isMounted ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
         )}
       >
-        <ScanText className="h-16 w-16 text-primary" />
+        <Logo className="h-16 w-16 text-primary" />
         <h1 className="text-5xl font-bold tracking-tighter text-foreground">
-          SnapTranslate
+          App Translate
         </h1>
       </div>
     </div>
