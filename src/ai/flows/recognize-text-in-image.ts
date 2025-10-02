@@ -14,7 +14,7 @@ const RecognizeTextInImageInputSchema = z.object({
   photoDataUri: z
     .string()
     .describe(
-      'A photo containing text, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.'
+      "A photo containing text, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
 });
 export type RecognizeTextInImageInput = z.infer<typeof RecognizeTextInImageInputSchema>;
@@ -38,7 +38,7 @@ Extract all text from the following image:
 
 {{media url=photoDataUri}}
 
-Ensure that you capture all text present in the image, preserving the original line breaks and formatting as much as possible.`,
+Do not add any preamble or extra explanation. Only return the text that was recognized.`,
 });
 
 const recognizeTextInImageFlow = ai.defineFlow(

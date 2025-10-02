@@ -30,29 +30,13 @@ export async function translateRecognizedText(
   return translateRecognizedTextFlow(input);
 }
 
-const translateTextTool = ai.defineTool({
-  name: 'translateText',
-  description: 'Translates text from one language to another using an external translation API.',
-  inputSchema: z.object({
-    text: z.string().describe('The text to translate.'),
-    targetLanguage: z.string().describe('The target language code (e.g., \"en\", \"fr\").'),
-    sourceLanguage: z.string().describe('The source language code (e.g., \"en\", \"fr\").'),
-  }),
-  outputSchema: z.string().describe('The translated text.'),
-  async resolve(input) {
-    // TODO: Implement the call to the external translation API here.
-    // This is a placeholder implementation.
-    console.log('Calling external translation API with input:', input);
-    return `Translated text (from ${input.sourceLanguage} to ${input.targetLanguage}): ${input.text}`;
-  },
-});
-
 const translateRecognizedTextPrompt = ai.definePrompt({
   name: 'translateRecognizedTextPrompt',
-  tools: [translateTextTool],
   input: {schema: TranslateRecognizedTextInputSchema},
   output: {schema: TranslateRecognizedTextOutputSchema},
-  prompt: `You are a translation expert. The user will provide text, a source language, and a target language.  You must use the translateText tool to translate the given text to the target language.
+  prompt: `You are a translation expert. The user will provide text, a source language, and a target language. You must translate the given text to the target language.
+
+Do not add any extra explanation, preamble, or any other text that is not part of the translation. Only return the translated text.
 
 Text: {{{text}}}
 Source Language: {{{sourceLanguage}}}
