@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview Recognizes text in an image using Google ML Kit.
+ * @fileOverview Recognizes text in an image using a Genkit AI flow.
  *
  * - recognizeTextInImage - A function that handles the text recognition process.
  * - RecognizeTextInImageInput - The input type for the recognizeTextInImage function.
@@ -32,13 +32,13 @@ const prompt = ai.definePrompt({
   name: 'recognizeTextInImagePrompt',
   input: {schema: RecognizeTextInImageInputSchema},
   output: {schema: RecognizeTextInImageOutputSchema},
-  prompt: `You are an expert OCR reader, and will extract the text from the image.
+  prompt: `You are an expert OCR (Optical Character Recognition) reader. Your task is to accurately extract all text from the provided image.
 
 Extract all text from the following image:
 
 {{media url=photoDataUri}}
 
-Make sure to extract all of the text present in the image.`,
+Ensure that you capture all text present in the image, preserving the original line breaks and formatting as much as possible.`,
 });
 
 const recognizeTextInImageFlow = ai.defineFlow(

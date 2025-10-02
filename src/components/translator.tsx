@@ -35,7 +35,7 @@ function RecognizeSubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      {pending ? <Loader2 className="animate-spin" /> : <ScanText />}
+      {pending ? <Loader2 className="animate-spin mr-2" /> : <ScanText className="mr-2" />}
       Recognize Text
     </Button>
   );
@@ -45,7 +45,7 @@ function TranslateSubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full">
-      {pending ? <Loader2 className="animate-spin" /> : <Languages />}
+      {pending ? <Loader2 className="animate-spin mr-2" /> : <Languages className="mr-2" />}
       Translate
     </Button>
   );
@@ -118,8 +118,8 @@ export function Translator() {
   const handleClear = (fullClear = true) => {
     if (fullClear && fileInputRef.current) {
         fileInputRef.current.value = '';
-        setImagePreview(null);
     }
+    setImagePreview(null);
     setRecognizedText('');
     setTypedText('');
     setTranslatedText('');
@@ -148,7 +148,7 @@ export function Translator() {
                 </TabsList>
                 <TabsContent value="upload">
                      <div
-                        className="relative border-2 border-dashed border-white/30 rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-white/10 transition-colors mt-4"
+                        className="relative border-2 border-dashed border-white/30 rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-white/10 transition-colors mt-4 flex items-center justify-center min-h-[250px]"
                         onClick={() => fileInputRef.current?.click()}
                       >
                         <input
@@ -206,6 +206,7 @@ export function Translator() {
                           onChange={(e) => {
                             setTypedText(e.target.value);
                             setRecognizedText(''); // Clear image-based text
+                            setImagePreview(null);
                             setTranslatedText('');
                           }}
                           placeholder="Type or paste text here..."
@@ -223,7 +224,10 @@ export function Translator() {
               <Textarea
                 id="recognized-text"
                 value={textToTranslate}
-                readOnly
+                onChange={(e) => {
+                  setTypedText(e.target.value);
+                  setRecognizedText(e.target.value);
+                }}
                 placeholder="Text to translate will appear here..."
                 className="h-32 pr-10 bg-white/50 dark:bg-black/50"
               />
@@ -261,6 +265,10 @@ export function Translator() {
                     </Select>
                 </div>
               <TranslateSubmitButton />
+            </form>
+          )}
+
+          {translatedText && (
               <div className="space-y-2">
                 <Label htmlFor="translated-text">Translated Text</Label>
                 <div className="relative">
@@ -283,7 +291,6 @@ export function Translator() {
                   )}
                 </div>
               </div>
-            </form>
           )}
         </div>
       </GlassCardContent>
