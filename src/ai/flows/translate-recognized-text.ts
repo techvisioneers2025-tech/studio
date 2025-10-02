@@ -98,18 +98,20 @@ const translateRecognizedTextFlow = ai.defineFlow(
           }
         );
 
-        if (response.status === 200) {
+        if (response.ok) {
           const result = await response.json();
-          console.log('Aksharamukha API success.');
-          return { translatedText: result.text };
-        } else {
-          // Log the error but don't throw, so we can fall back.
-          const errorBody = await response.text();
-          console.error(
-            `Aksharamukha API failed with status ${response.status}:`,
-            errorBody
-          );
+          if (result.text) {
+             console.log('Aksharamukha API success.');
+             return { translatedText: result.text };
+          }
         }
+        // Log the error but don't throw, so we can fall back.
+        const errorBody = await response.text();
+        console.error(
+          `Aksharamukha API failed with status ${response.status}:`,
+          errorBody
+        );
+
       } catch (error) {
         console.error('Error calling Aksharamukha API:', error);
       }
