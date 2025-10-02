@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import React, { useState, useEffect, useRef, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import {
   Camera,
@@ -58,8 +58,8 @@ export function Translator() {
   const [isCopiedRec, setIsCopiedRec] = useState(false);
   const [isCopiedTrans, setIsCopiedTrans] = useState(false);
 
-  const [recognizeState, recognizeAction] = useFormState(handleRecognizeText, initialState);
-  const [translateState, translateAction] = useFormState(handleTranslateText, initialState);
+  const [recognizeState, recognizeAction] = useActionState(handleRecognizeText, initialState);
+  const [translateState, translateAction] = useActionState(handleTranslateText, initialState);
 
   useEffect(() => {
     if (recognizeState?.message) {
