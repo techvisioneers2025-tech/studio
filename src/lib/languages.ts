@@ -4,16 +4,17 @@ export type Language = {
 };
 
 export const languages: Language[] = [
+  { code: 'ar', name: 'Arabic' },
+  { code: 'zh', name: 'Chinese' },
   { code: 'en', name: 'English' },
-  { code: 'es', name: 'Spanish' },
   { code: 'fr', name: 'French' },
   { code: 'de', name: 'German' },
+  { code: 'hi', name: 'Hindi' },
   { code: 'it', name: 'Italian' },
+  { code: 'ja', 'name': 'Japanese' },
+  { code: 'ko', name: 'Korean' },
   { code: 'pt', name: 'Portuguese' },
   { code: 'ru', name: 'Russian' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'ko', name: 'Korean' },
-  { code: 'zh', name: 'Chinese' },
-  { code: 'ar', name: 'Arabic' },
-  { code: 'hi', name: 'Hindi' },
+  { code: 'es', name: 'Spanish' },
+  { code: 'te', name: 'Telugu' },
 ];
