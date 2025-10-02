@@ -25,4 +25,5 @@ export const languages: Language[] = [
   { code: 'pt', name: 'Portuguese' },
   { code: 'ru', name: 'Russian' },
   { code: 'es', name: 'Spanish' },
+  { code: 'roman', name: 'Roman' },
 ];
