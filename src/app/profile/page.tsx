@@ -2,7 +2,7 @@
 
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { collection, doc, setDoc, query, orderBy, Timestamp } from 'firebase/firestore';
 import { useCollection } from '@/firebase/firestore/use-collection';
 
