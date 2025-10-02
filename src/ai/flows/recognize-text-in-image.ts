@@ -32,6 +32,7 @@ const prompt = ai.definePrompt({
   name: 'recognizeTextInImagePrompt',
   input: {schema: RecognizeTextInImageInputSchema},
   output: {schema: RecognizeTextInImageOutputSchema},
+  model: 'googleai/gemini-pro',
   prompt: `You are an expert OCR (Optical Character Recognition) reader. Your task is to accurately extract all text from the provided image.
 
 Extract all text from the following image:
