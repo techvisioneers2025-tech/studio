@@ -2,7 +2,7 @@
 
 import { recognizeTextInImage } from '@/ai/flows/recognize-text-in-image';
 import { translateRecognizedText } from '@/ai/flows/translate-recognized-text';
-import { addDocumentNonBlocking } from '@/firebase';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, getFirestore } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 import { z } from 'zod';
@@ -106,7 +106,7 @@ export async function handleSaveTranslation(prevState: FormState, formData: Form
         const firestore = getFirestore(firebaseApp);
         const historyCollectionRef = collection(firestore, 'users', validatedFields.data.userId, 'translationHistory');
         
-        await addDocumentNonBlocking(historyCollectionRef, {
+        addDocumentNonBlocking(historyCollectionRef, {
             ...validatedFields.data,
             timestamp: serverTimestamp(),
         });

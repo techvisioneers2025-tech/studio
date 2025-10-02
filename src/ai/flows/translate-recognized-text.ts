@@ -38,6 +38,16 @@ const scriptMap: Record<string, string> = {
     'pa': 'Gurmukhi',
     'or': 'Oriya',
     'roman': 'Roman',
+    'ar': 'Arabic',
+    'zh': 'Han', // Chinese characters
+    'fr': 'Roman',
+    'de': 'Roman',
+    'it': 'Roman',
+    'ja': 'Kana', // Japanese
+    'ko': 'Hangul', // Korean
+    'pt': 'Roman',
+    'ru': 'Cyrillic', // Russian
+    'es': 'Roman',
 };
 
 
@@ -61,9 +71,10 @@ const translateRecognizedTextFlow = ai.defineFlow(
     const targetScript = scriptMap[targetLanguage];
 
     if (!targetScript) {
-      throw new Error(`Unsupported target language for transliteration: ${targetLanguage}`);
+      console.warn(`Unsupported target language for Aksharamukha, falling back to GenAI: ${targetLanguage}`);
+      return await callGenAiTranslator(input);
     }
-
+    
     // Aksharamukha treats Roman as the default/pivot script.
     // The API is GET based.
     const url = new URL('https://aksharamukha.appspot.com/api/v1/transliterate');
@@ -86,9 +97,8 @@ const translateRecognizedTextFlow = ai.defineFlow(
 
       const result = await response.json();
       
-      // The API returns the input text if it can't transliterate
-      if (result.result === text) {
-          throw new Error("Aksharamukha could not transliterate the text.");
+      if (!result.result || result.result === text) {
+          throw new Error("Aksharamukha could not transliterate the text or returned the original text.");
       }
 
       return { translatedText: result.result };
