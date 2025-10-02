@@ -1,11 +1,15 @@
 'use client';
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { Translator } from "@/components/translator";
 import { SplashScreen } from "@/components/splash-screen";
+import { useUser } from "@/firebase";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -14,8 +18,13 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
 
-  if (loading) {
+  if (loading || isUserLoading || !user) {
     return <SplashScreen />;
   }
 

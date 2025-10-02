@@ -1,5 +1,6 @@
 import { Logo } from './logo';
 import Link from 'next/link';
+import { UserNav } from './user-nav';
 
 export function Header() {
   return (
@@ -9,6 +10,9 @@ export function Header() {
         <Link href="/" className="text-xl font-bold tracking-tight font-headline text-foreground">
           App Translate
         </Link>
+        <div className="ml-auto">
+          <UserNav />
+        </div>
       </div>
     </header>
   );
