@@ -85,11 +85,16 @@ const translateRecognizedTextFlow = ai.defineFlow(
       }
 
       const result = await response.json();
+      
+      // The API returns the input text if it can't transliterate
+      if (result.result === text) {
+          throw new Error("Aksharamukha could not transliterate the text.");
+      }
 
-      return { translatedText: result.transliterated_text };
+      return { translatedText: result.result };
 
     } catch (error) {
-      console.error("Failed to call Aksharamukha API", error);
+      console.error("Failed to call Aksharamukha API, falling back to GenAI", error);
       // Fallback to the GenAI model if the direct API call fails
       return await callGenAiTranslator(input);
     }
