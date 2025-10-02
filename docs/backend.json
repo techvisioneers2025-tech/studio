@@ -42,13 +42,9 @@
       "type": "object",
       "description": "Represents a single translation performed by a user.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the translation history entry."
-        },
         "userId": {
           "type": "string",
-          "description": "Reference to the User who performed the translation. (Relationship: User 1:N TranslationHistory)"
+          "description": "Reference to the User who performed the translation."
         },
         "sourceText": {
           "type": "string",
@@ -73,7 +69,6 @@
         }
       },
       "required": [
-        "id",
         "userId",
         "sourceText",
         "translatedText",

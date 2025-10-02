@@ -2,7 +2,11 @@
 
 import { recognizeTextInImage } from '@/ai/flows/recognize-text-in-image';
 import { translateRecognizedText } from '@/ai/flows/translate-recognized-text';
+import { addDocumentNonBlocking } from '@/firebase';
+import { collection, getFirestore } from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
 import { z } from 'zod';
+import { serverTimestamp } from 'firebase/firestore';
 
 type FormState = {
   message: string | null;
@@ -18,6 +22,14 @@ const translateSchema = z.object({
   text: z.string(),
   sourceLanguage: z.string(),
   targetLanguage: z.string(),
+});
+
+const saveTranslationSchema = z.object({
+    userId: z.string(),
+    sourceText: z.string(),
+    translatedText: z.string(),
+    sourceLanguage: z.string(),
+    targetLanguage: z.string(),
 });
 
 export async function handleRecognizeText(prevState: FormState, formData: FormData): Promise<FormState> {
@@ -71,4 +83,37 @@ export async function handleTranslateText(prevState: FormState, formData: FormDa
     console.error('Translation error:', error);
     return { message: 'Failed to translate text. Please try again later.', timestamp: Date.now() };
   }
+}
+
+export async function handleSaveTranslation(prevState: FormState, formData: FormData): Promise<FormState> {
+    const validatedFields = saveTranslationSchema.safeParse({
+        userId: formData.get('userId'),
+        sourceText: formData.get('sourceText'),
+        translatedText: formData.get('translatedText'),
+        sourceLanguage: formData.get('sourceLanguage'),
+        targetLanguage: formData.get('targetLanguage'),
+    });
+
+    if (!validatedFields.success) {
+        return {
+        message: 'Invalid translation data for saving.',
+        timestamp: Date.now(),
+        };
+    }
+
+    try {
+        const { firebaseApp } = initializeFirebase();
+        const firestore = getFirestore(firebaseApp);
+        const historyCollectionRef = collection(firestore, 'users', validatedFields.data.userId, 'translationHistory');
+        
+        await addDocumentNonBlocking(historyCollectionRef, {
+            ...validatedFields.data,
+            timestamp: serverTimestamp(),
+        });
+
+        return { message: 'Translation saved successfully!', timestamp: Date.now() };
+    } catch (error: any) {
+        console.error('Save translation error:', error);
+        return { message: 'Failed to save translation.', timestamp: Date.now() };
+    }
 }

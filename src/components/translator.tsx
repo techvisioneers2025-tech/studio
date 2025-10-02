@@ -13,10 +13,11 @@ import {
   ArrowRightLeft,
   X,
   Camera,
-  Type
+  Type,
+  Save
 } from 'lucide-react';
 
-import { handleRecognizeText, handleTranslateText } from '@/app/actions';
+import { handleRecognizeText, handleTranslateText, handleSaveTranslation } from '@/app/actions';
 import { languages, type Language } from '@/lib/languages';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { CameraInput } from './camera-input';
+import { useUser } from '@/firebase';
 
 
 const initialState = { message: null, data: null };
@@ -54,6 +56,7 @@ function TranslateSubmitButton() {
 export function Translator() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useUser();
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [recognizedText, setRecognizedText] = useState('');
@@ -66,6 +69,7 @@ export function Translator() {
 
   const [recognizeState, recognizeAction] = useActionState(handleRecognizeText, initialState);
   const [translateState, translateAction] = useActionState(handleTranslateText, initialState);
+  const [saveState, saveAction] = useActionState(handleSaveTranslation, initialState);
 
   useEffect(() => {
     if (recognizeState?.message) {
@@ -86,6 +90,17 @@ export function Translator() {
       setTranslatedText(translateState.data);
     }
   }, [translateState, toast]);
+  
+  useEffect(() => {
+    if (saveState?.timestamp) { // check for timestamp to avoid initial render toast
+        if (saveState.message?.includes('success')) {
+            toast({ title: 'Success', description: saveState.message });
+        } else if(saveState.message) {
+            toast({ variant: 'destructive', title: 'Error', description: saveState.message });
+        }
+    }
+  }, [saveState, toast]);
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -275,20 +290,36 @@ export function Translator() {
                   <Textarea
                     id="translated-text"
                     value={translatedText}
-                    readOnly
+                    onChange={(e) => setTranslatedText(e.target.value)}
                     placeholder="Translation will appear here..."
-                    className="h-32 pr-10 bg-white/50 dark:bg-black/50"
+                    className="h-32 pr-20 bg-white/50 dark:bg-black/50"
                   />
-                  {translatedText && (
+                  <div className="absolute top-2 right-2 flex gap-1">
+                    <form action={saveAction}>
+                        <input type="hidden" name="userId" value={user?.uid} />
+                        <input type="hidden" name="sourceText" value={textToTranslate} />
+                        <input type="hidden" name="translatedText" value={translatedText} />
+                        <input type="hidden" name="sourceLanguage" value={sourceLang} />
+                        <input type="hidden" name="targetLanguage" value={targetLang} />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          type="submit"
+                          disabled={!user || user.isAnonymous}
+                        >
+                            <Save className="w-4 h-4" />
+                        </Button>
+                    </form>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute top-2 right-2 h-7 w-7"
+                      className="h-7 w-7"
                       onClick={() => handleCopy(translatedText, 'translated')}
                     >
                       {isCopiedTrans ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                     </Button>
-                  )}
+                  </div>
                 </div>
               </div>
           )}
