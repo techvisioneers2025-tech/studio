@@ -46,6 +46,7 @@ export default function LoginPage() {
 
     if (!userDoc.exists()) {
       await setDoc(userRef, {
+        id: user.uid,
         email: user.email,
         displayName: user.displayName,
         createdAt: serverTimestamp(),
