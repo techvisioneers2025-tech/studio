@@ -19,7 +19,8 @@ import { handleRecognizeText, handleTranslateText } from '@/app/actions';
 import { languages, type Language } from '@/lib/languages';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { GlassCard, GlassCardContent } from '@/components/ui/glass-card';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -118,15 +119,15 @@ export function Translator() {
   }
 
   return (
-    <Card className="w-full max-w-4xl shadow-2xl">
+    <GlassCard className="w-full max-w-4xl">
       <CardHeader>
         <CardTitle className="font-headline text-3xl">Image Translator</CardTitle>
         <CardDescription>Upload an image, recognize the text, and translate it to your desired language.</CardDescription>
       </CardHeader>
-      <CardContent className="grid md:grid-cols-2 gap-8">
+      <GlassCardContent className="grid md:grid-cols-2 gap-8">
         <div className="space-y-6">
           <div
-            className="relative border-2 border-dashed border-muted-foreground/50 rounded-lg p-6 text-center cursor-pointer hover:border-primary hover:bg-accent/20 transition-colors"
+            className="relative border-2 border-dashed border-white/30 rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-white/10 transition-colors"
             onClick={() => fileInputRef.current?.click()}
           >
             <input
@@ -145,12 +146,12 @@ export function Translator() {
                   height={300}
                   className="rounded-md object-contain max-h-64 w-full"
                 />
-                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 bg-card/50 hover:bg-card" onClick={(e) => {e.stopPropagation(); handleClear();}}>
-                    <X className="h-4 w-4"/>
+                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 bg-black/20 hover:bg-black/40 backdrop-blur-sm" onClick={(e) => {e.stopPropagation(); handleClear();}}>
+                    <X className="h-4 w-4 text-white"/>
                 </Button>
               </>
             ) : (
-              <div className="flex flex-col items-center gap-2 text-muted-foreground">
+              <div className="flex flex-col items-center gap-2 text-foreground/80">
                 <UploadCloud className="w-12 h-12" />
                 <p className="font-semibold">Click to upload or drag & drop</p>
                 <p className="text-xs">PNG, JPG, WEBP up to 10MB</p>
@@ -174,7 +175,7 @@ export function Translator() {
                 value={recognizedText}
                 readOnly
                 placeholder="Text from image will appear here..."
-                className="h-32 pr-10"
+                className="h-32 pr-10 bg-white/50 dark:bg-black/50"
               />
               {recognizedText && (
                 <Button
@@ -218,7 +219,7 @@ export function Translator() {
                     value={translatedText}
                     readOnly
                     placeholder="Translation will appear here..."
-                    className="h-32 pr-10"
+                    className="h-32 pr-10 bg-white/50 dark:bg-black/50"
                   />
                   {translatedText && (
                     <Button
@@ -235,7 +236,7 @@ export function Translator() {
             </form>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </GlassCardContent>
+    </GlassCard>
   );
 }
