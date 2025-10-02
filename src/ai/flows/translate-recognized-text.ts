@@ -14,16 +14,27 @@ import {z} from 'genkit';
 
 const TranslateRecognizedTextInputSchema = z.object({
   text: z.string().describe('The text to be translated.'),
-  sourceLanguage: z.string().describe('The source language of the text (e.g., "en" for English).'),
-  targetLanguage: z.string().describe('The target language for the translation (e.g., "es" for Spanish).'),
+  sourceLanguage: z
+    .string()
+    .describe(
+      'The source language of the text (e.g., "en" for English, "ISO" for romanized script).'
+    ),
+  targetLanguage: z
+    .string()
+    .describe(
+      'The target language for the translation (e.g., "te" for Telugu).'
+    ),
 });
-export type TranslateRecognizedTextInput = z.infer<typeof TranslateRecognizedTextInputSchema>;
+export type TranslateRecognizedTextInput = z.infer<
+  typeof TranslateRecognizedTextInputSchema
+>;
 
 const TranslateRecognizedTextOutputSchema = z.object({
   translatedText: z.string().describe('The translated text.'),
 });
-export type TranslateRecognizedTextOutput = z.infer<typeof TranslateRecognizedTextOutputSchema>;
-
+export type TranslateRecognizedTextOutput = z.infer<
+  typeof TranslateRecognizedTextOutputSchema
+>;
 
 export async function translateRecognizedText(
   input: TranslateRecognizedTextInput
@@ -32,10 +43,10 @@ export async function translateRecognizedText(
 }
 
 const translateRecognizedTextPrompt = ai.definePrompt({
-    name: 'translateRecognizedTextPrompt',
-    input: {schema: TranslateRecognizedTextInputSchema},
-    output: {schema: TranslateRecognizedTextOutputSchema},
-    prompt: `You are a translation expert. The user will provide text, a source language, and a target language. You must translate the given text to the target language.
+  name: 'translateRecognizedTextPrompt',
+  input: {schema: TranslateRecognizedTextInputSchema},
+  output: {schema: TranslateRecognizedTextOutputSchema},
+  prompt: `You are a translation expert. The user will provide text, a source language, and a target language. You must translate the given text to the target language.
 
     Do not add any extra explanation, preamble, or any other text that is not part of the translation. Only return the translated text.
 
@@ -50,10 +61,67 @@ const translateRecognizedTextFlow = ai.defineFlow(
     inputSchema: TranslateRecognizedTextInputSchema,
     outputSchema: TranslateRecognizedTextOutputSchema,
   },
-  async input => {
-    const {output} = await translateRecognizedTextPrompt(input);
+  async (input) => {
+    // Map language code to Aksharamukha script name.
+    const scriptMapping: Record<string, string> = {
+      te: 'Telugu',
+      en: 'ISO', // Assuming English input is romanized
+      hi: 'Devanagari',
+      ta: 'Tamil',
+      kn: 'Kannada',
+      ml: 'Malayalam',
+      bn: 'Bengali',
+      gu: 'Gujarati',
+      pa: 'Gurmukhi',
+      or: 'Oriya',
+      rom: 'ISO',
+    };
+
+    const targetScript = scriptMapping[input.targetLanguage];
+
+    // If we have a valid script, try Aksharamukha first.
+    if (targetScript) {
+      try {
+        console.log(`Attempting transliteration to ${targetScript} via Aksharamukha.`);
+        const response = await fetch(
+          'https://aksharamukha-plugin.appspot.com/api/transliterate',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              source: 'ISO', // Assuming English/romanized input
+              target: targetScript,
+              text: input.text,
+            }),
+          }
+        );
+
+        if (response.status === 200) {
+          const result = await response.json();
+          console.log('Aksharamukha API success.');
+          return { translatedText: result.text };
+        } else {
+          // Log the error but don't throw, so we can fall back.
+          const errorBody = await response.text();
+          console.error(
+            `Aksharamukha API failed with status ${response.status}:`,
+            errorBody
+          );
+        }
+      } catch (error) {
+        console.error('Error calling Aksharamukha API:', error);
+      }
+    }
+    
+    // Fallback to Genkit AI if the API call fails or is not applicable
+    console.log('Falling back to generative AI model for translation.');
+    const { output } = await translateRecognizedTextPrompt(input);
     if (!output) {
-      throw new Error('Translation failed: The AI model did not return any output.');
+      throw new Error(
+        'Translation failed: The AI model did not return any output.'
+      );
     }
     return output;
   }
